@@ -38,9 +38,9 @@ async function createSmsDataTable() {
         const connection = await pool.getConnection();
         await connection.query(`
             CREATE TABLE IF NOT EXISTS IGRS_Message (
-                id INT AUTO_INCREMENT PRIMARY KEY,
+                ID INT AUTO_INCREMENT PRIMARY KEY,
                 Sender VARCHAR(255) NOT NULL,
-                Message_time DATETIME NOT NULL,
+                Message_Time DATETIME NOT NULL,
                 Message TEXT NOT NULL,
                 OTP VARCHAR(10),
                 User_Mobile VARCHAR(20) NOT NULL
@@ -71,25 +71,26 @@ app.post('/validate_database', async (req, res) => {
 
     res.status(200).send('Database details received successfully');
 });
+
 // Endpoint to handle receiving SMS data from Flutter app
 app.post('/sms', async (req, res) => {
-    const { Sender, Message, Message_time, User_Mobile } = req.body;
-    if (!Sender || !Message || !Message_time || !User_Mobile) {
+    const { sender, message, message_time, user_mobile } = req.body;
+    if (!sender || !message || !message_time || !user_mobile) {
         return res.status(400).send('Incomplete SMS data');
     }
 
     try {
         // Extract OTP from message
         const otpRegex = /\b\d{4,6}|\b\d{16}\b/;
-        const otpMatch = Message.match(otpRegex);
-        const OTP = otpMatch ? otpMatch[0] : null;
+        const otpMatch = message.match(otpRegex);
+        const otp = otpMatch ? otpMatch[0] : null;
 
         // Get connection pool
         const pool = await createPool();
 
-        // Store data in the database
+        // Store data in the database with updated column names
         const connection = await pool.getConnection();
-        await connection.query('INSERT INTO IGRS_Message (Sender, Message_time, Message, OTP, User_Mobile) VALUES (?, ?, ?, ?, ?)', [Sender, Message_time, Message, OTP, User_Mobile]);
+        await connection.query('INSERT INTO IGRS_Message (Sender, Message_Time, Message, OTP, User_Mobile) VALUES (?, ?, ?, ?, ?)', [sender, message_time, message, otp, user_mobile]);
         connection.release();
 
         console.log('SMS data stored successfully');
@@ -102,5 +103,5 @@ app.post('/sms', async (req, res) => {
 
 // Start the server
 app.listen(port, () => {
-   console.log(`Server is running on http://192.168.160.29:${port}`);
+    console.log(Server is running on server);
 });
