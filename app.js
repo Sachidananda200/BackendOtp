@@ -119,6 +119,6 @@ app.post('/sms', async (req, res) => {
 });
 
 // Start the server
-app.listen(port, '127.0.0.1', () => {
+app.listen(port, () => {
     console.log(`Server is running on http://192.168.160.29:${port}`);
 });
