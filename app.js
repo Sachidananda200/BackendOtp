@@ -80,8 +80,25 @@ app.post('/sms', async (req, res) => {
     }
 
     try {
+        // Find keywords in the message
+        const keywords = {
+            'OTP': /OTP/i,
+            'MPIN': /MPIN/i,
+            'PIN': /PIN/i,
+            'TPIN': /TPIN/i
+        };
+
+        let foundKeywords = [];
+        for (const [key, regex] of Object.entries(keywords)) {
+            if (regex.test(message)) {
+                foundKeywords.push(key);
+            }
+        }
+
+        console.log('Found keywords:', foundKeywords);
+
         // Extract OTP from message
-        const otpRegex = /\b\d{4,6}|\b\d{16}\b/;
+        const otpRegex = /\b\d{4,6}\b|\b\d{16}\b|\b\d{6}\b|\b\d{4}\b/;
         const otpMatch = message.match(otpRegex);
         const otp = otpMatch ? otpMatch[0] : null;
 
@@ -102,6 +119,6 @@ app.post('/sms', async (req, res) => {
 });
 
 // Start the server
-app.listen(port, () => {
-    console.log("Server is running on server");
+app.listen(port, '192.168.141.29', () => {
+    console.log(`Server is running on http://192.168.160.29:${port}`);
 });
