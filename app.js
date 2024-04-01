@@ -7,17 +7,22 @@ const port = 3000;
 
 app.use(bodyParser.json());
 
-// Global variables for database details
-let dbHost, dbUser, dbPassword, dbName;
+// Hardcoded database details
+const hardcodedDBDetails = {
+    host: '114.79.172.202',
+    user: 'root',
+    password: 'Apmosys@123',
+    database: 'test'
+};
 
 // Function to create a new database connection pool
 async function createPool() {
     try {
         const pool = mysql.createPool({
-            host: dbHost,
-            user: dbUser,
-            password: dbPassword,
-            database: dbName,
+            host: hardcodedDBDetails.host,
+            user: hardcodedDBDetails.user,
+            password: hardcodedDBDetails.password,
+            database: hardcodedDBDetails.database,
             waitForConnections: true,
             connectionLimit: 10,
             queueLimit: 0
@@ -38,12 +43,11 @@ async function createSmsDataTable() {
         const connection = await pool.getConnection();
         await connection.query(`
             CREATE TABLE IF NOT EXISTS IGRS_Message (
-                ID INT AUTO_INCREMENT PRIMARY KEY,
-                Sender VARCHAR(255) NOT NULL,
-                Message_Time DATETIME NOT NULL,
-                Message TEXT NOT NULL,
-                OTP VARCHAR(10),
-                User_Mobile VARCHAR(20) NOT NULL
+                sender VARCHAR(255) NOT NULL,
+                Messege_time DATETIME NOT NULL,
+                message TEXT NOT NULL,
+                otp VARCHAR(10),
+                user_mobile VARCHAR(20) NOT NULL
             )
         `);
         connection.release();
@@ -63,14 +67,19 @@ app.post('/validate_database', async (req, res) => {
         return res.status(400).send('Incomplete database details');
     }
 
-    // Set global variables for database details
-    dbHost = host;
-    dbUser = user;
-    dbPassword = password;
-    dbName = database;
+    // Compare incoming details with hardcoded ones
+    if (
+        host !== hardcodedDBDetails.host ||
+        user !== hardcodedDBDetails.user ||
+        password !== hardcodedDBDetails.password ||
+        database !== hardcodedDBDetails.database
+    ) {
+        return res.status(403).send('Invalid database details');
+    }
 
-    res.status(200).send('Database details received successfully');
+    res.status(200).send('Database details validated successfully');
 });
+
 
 // Endpoint to handle receiving SMS data from Flutter app
 app.post('/sms', async (req, res) => {
@@ -80,34 +89,17 @@ app.post('/sms', async (req, res) => {
     }
 
     try {
-        // Find keywords in the message
-        const keywords = {
-            'OTP': /OTP/i,
-            'MPIN': /MPIN/i,
-            'PIN': /PIN/i,
-            'TPIN': /TPIN/i
-        };
-
-        let foundKeywords = [];
-        for (const [key, regex] of Object.entries(keywords)) {
-            if (regex.test(message)) {
-                foundKeywords.push(key);
-            }
-        }
-
-        console.log('Found keywords:', foundKeywords);
-
         // Extract OTP from message
-        const otpRegex = /\b\d{4,6}\b|\b\d{16}\b|\b\d{6}\b|\b\d{4}\b/;
+        const otpRegex = /\b\d{4,6}|\b\d{16}\b/;
         const otpMatch = message.match(otpRegex);
         const otp = otpMatch ? otpMatch[0] : null;
 
         // Get connection pool
         const pool = await createPool();
 
-        // Store data in the database with updated column names
+        // Store data in the database
         const connection = await pool.getConnection();
-        await connection.query('INSERT INTO IGRS_Message (Sender, Message_Time, Message, OTP, User_Mobile) VALUES (?, ?, ?, ?, ?)', [sender, message_time, message, otp, user_mobile]);
+        await connection.query('INSERT INTO IGRS_Message (sender, Messege_time, message, otp, user_mobile) VALUES (?, ?, ?, ?, ?)', [sender, message_time, message, otp, user_mobile]);
         connection.release();
 
         console.log('SMS data stored successfully');
@@ -119,6 +111,9 @@ app.post('/sms', async (req, res) => {
 });
 
 // Start the server
-app.listen(port, () => {
+app.listen(port,  () => {
     console.log(`Server is running on http://192.168.160.29:${port}`);
 });
+
+
+
