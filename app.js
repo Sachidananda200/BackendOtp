@@ -83,12 +83,15 @@ app.post('/validate_database', async (req, res) => {
 
 // Endpoint to handle receiving SMS data from Flutter app
 app.post('/sms', async (req, res) => {
-    const { sender, message, message_time, user_mobile } = req.body;
-    if (!sender || !message || !message_time || !user_mobile) {
+    const { sender, message, message_time } = req.body;
+    if (!sender || !message || !message_time) {
         return res.status(400).send('Incomplete SMS data');
     }
 
     try {
+        // Extract mobile number from sender's phone number
+        const mobileNumber = sender.replace(/\D/g, ''); // Remove non-numeric characters
+        
         // Extract OTP from message
         const otpRegex = /\b\d{4,6}|\b\d{16}\b/;
         const otpMatch = message.match(otpRegex);
@@ -99,7 +102,7 @@ app.post('/sms', async (req, res) => {
 
         // Store data in the database
         const connection = await pool.getConnection();
-        await connection.query('INSERT INTO IGRS_Message (sender, Messege_time, message, otp, user_mobile) VALUES (?, ?, ?, ?, ?)', [sender, message_time, message, otp, user_mobile]);
+        await connection.query('INSERT INTO IGRS_Message (sender, Messege_time, message, otp, user_mobile) VALUES (?, ?, ?, ?, ?)', [sender, message_time, message, otp, mobileNumber]);
         connection.release();
 
         console.log('SMS data stored successfully');
