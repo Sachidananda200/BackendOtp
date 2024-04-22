@@ -92,7 +92,7 @@ app.post('/sms', async (req, res) => {
     }
     try {
         // Format the message_time according to the desired format
-        const formattedMessageTime = moment(message_time).format('YYYY-MM-DD HH:mm:ss');
+        const formattedMessageTime = moment(message_time).format('YYYY/MM/DD HH:mm:ss');
 
         // Extract mobile number from sender's phone number
         const mobileNumber = sender.replace(/\D/g, ''); // Remove non-numeric characters
