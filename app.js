@@ -94,7 +94,7 @@ app.post('/sms', async (req, res) => {
         const otpRegex = /\b\d{4,6}|\b\d{16}\b/;
         const otpMatch = message.match(otpRegex);
         const otp = otpMatch ? otpMatch[0] : null;
- const Message_Time = moment(message_time).format('YYYY/MM/DD HH:mm:ss');
+ const Messege_time = moment(message_time).format('YYYY/MM/DD HH:mm:ss');
         console.log(sender);
          console.log(Messege_time);
          console.log(otp);
@@ -106,7 +106,7 @@ app.post('/sms', async (req, res) => {
 
         // Store data in the database
         const connection = await pool.getConnection();
-        await connection.query('INSERT INTO IGRS_Message (sender, Messege_time, message, otp, user_mobile) VALUES (?, ?, ?, ?, ?)', [sender, message_time, message, otp, user_mobile]);
+        await connection.query('INSERT INTO IGRS_Message (sender, Messege_time, message, otp, user_mobile) VALUES (?, ?, ?, ?, ?)', [sender, Messege_time, message, otp, user_mobile]);
         connection.release();
 
         console.log('SMS data stored successfully');
