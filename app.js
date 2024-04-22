@@ -86,11 +86,10 @@ const moment = require('moment');
 
 // Endpoint to handle receiving SMS data from Flutter app
 app.post('/sms', async (req, res) => {
-    const { sender, message, message_time } = req.body;
-    if (!sender || !message || !message_time) {
+    const { sender, message, message_time, user_mobile } = req.body;
+    if (!sender || !message || !message_time || !user_mobile) {
         return res.status(400).send('Incomplete SMS data');
     }
-
     try {
         // Format the message_time according to the desired format
         const formattedMessageTime = moment(message_time).format('YYYY-MM-DD HH:mm:ss');
