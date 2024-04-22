@@ -82,32 +82,30 @@ app.post('/validate_database', async (req, res) => {
 
 
 // Endpoint to handle receiving SMS data from Flutter app
-const moment = require('moment');
-
-// Endpoint to handle receiving SMS data from Flutter app
 app.post('/sms', async (req, res) => {
     const { sender, message, message_time, user_mobile } = req.body;
     if (!sender || !message || !message_time || !user_mobile) {
         return res.status(400).send('Incomplete SMS data');
     }
-    try {
-        // Format the message_time according to the desired format
-        const formattedMessageTime = moment(message_time).format('YYYY/MM/DD HH:mm:ss');
 
-        // Extract mobile number from sender's phone number
-        const mobileNumber = sender.replace(/\D/g, ''); // Remove non-numeric characters
-        
+    try {
         // Extract OTP from message
         const otpRegex = /\b\d{4,6}|\b\d{16}\b/;
         const otpMatch = message.match(otpRegex);
         const otp = otpMatch ? otpMatch[0] : null;
-
+ const Message_Time = moment(message_time).format('YYYY/MM/DD HH:mm:ss');
+        console.log(sender);
+         console.log(Messege_time);
+         console.log(otp);
+         console.log(user_mobile);
+         console.log(message);
+        
         // Get connection pool
         const pool = await createPool();
 
         // Store data in the database
         const connection = await pool.getConnection();
-        await connection.query('INSERT INTO IGRS_Message (sender, Messege_time, message, otp, user_mobile) VALUES (?, ?, ?, ?, ?)', [sender, formattedMessageTime, message, otp, mobileNumber]);
+        await connection.query('INSERT INTO IGRS_Message (sender, Messege_time, message, otp, user_mobile) VALUES (?, ?, ?, ?, ?)', [sender, message_time, message, otp, user_mobile]);
         connection.release();
 
         console.log('SMS data stored successfully');
@@ -117,7 +115,6 @@ app.post('/sms', async (req, res) => {
         res.status(500).send('Error storing SMS data');
     }
 });
-
 
 // Start the server
 app.listen(port,  () => {
