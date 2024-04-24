@@ -11,7 +11,6 @@ app.use(bodyParser.json());
 // Hardcoded database details
 const hardcodedDBDetails = {
     host: '114.79.172.202',
-    user: 'root',
     password: 'Apmosys@123',
     database: 'test'
 };
@@ -21,7 +20,7 @@ async function createPool() {
     try {
         const pool = mysql.createPool({
             host: hardcodedDBDetails.host,
-            user: hardcodedDBDetails.user,
+            user,
             password: hardcodedDBDetails.password,
             database: hardcodedDBDetails.database,
             waitForConnections: true,
@@ -71,7 +70,6 @@ app.post('/validate_database', async (req, res) => {
     // Compare incoming details with hardcoded ones
     if (
         host !== hardcodedDBDetails.host ||
-        user !== hardcodedDBDetails.user ||
         password !== hardcodedDBDetails.password ||
         database !== hardcodedDBDetails.database
     ) {
