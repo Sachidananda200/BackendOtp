@@ -11,7 +11,7 @@ app.use(bodyParser.json());
 // Hardcoded database details
 const hardcodedDBDetails = {
     host: '114.79.172.202',
-    user:'root'
+    user:'root',
     password: 'Apmosys@123',
     database: 'test'
 };
@@ -21,7 +21,7 @@ async function createPool() {
     try {
         const pool = mysql.createPool({
             host: hardcodedDBDetails.host,
-            user:hardcodedDBDetails,user
+            user:hardcodedDBDetails.user,
             password: hardcodedDBDetails.password,
             database: hardcodedDBDetails.database,
             waitForConnections: true,
