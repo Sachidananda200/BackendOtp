@@ -102,13 +102,24 @@ app.post('/sms', async (req, res) => {
         const otp = otpMatch ? otpMatch[0] : null;
         const Messege_time = moment(message_time).format('YYYY/MM/DD HH:mm:ss');
 
-        // Get connection from the pool
+        // Check if the SMS already exists in the database
         const connection = await pool.getConnection();
-        await connection.query('INSERT INTO IGRS_Message (sender, Messege_time, message, otp, user_mobile) VALUES (?, ?, ?, ?, ?)', [sender, Messege_time, message, otp, user_mobile]);
+        const [existingSms] = await connection.query('SELECT * FROM IGRS_Message WHERE sender = ? AND Messege_time = ? AND message = ? AND otp = ? AND user_mobile = ?', [sender, Messege_time, message, otp, user_mobile]);
         connection.release();
 
-        console.log('SMS data stored successfully');
-        res.status(200).send('SMS data stored successfully');
+        if (existingSms.length > 0) {
+            // If SMS already exists, send a message indicating it
+            console.log('SMS already exists:', existingSms);
+            res.status(400).send('SMS already exists');
+        } else {
+            // If SMS does not exist, insert it into the database
+            const insertConnection = await pool.getConnection();
+            await insertConnection.query('INSERT INTO IGRS_Message (sender, Messege_time, message, otp, user_mobile) VALUES (?, ?, ?, ?, ?)', [sender, Messege_time, message, otp, user_mobile]);
+            insertConnection.release();
+
+            console.log('SMS data stored successfully');
+            res.status(200).send('SMS data stored successfully');
+        }
     } catch (error) {
         console.log('Error storing SMS data:', error);
         res.status(500).send('Error storing SMS data');
