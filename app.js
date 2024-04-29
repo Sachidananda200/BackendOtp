@@ -16,12 +16,14 @@ const hardcodedDBDetails = {
     database: 'test'
 };
 
+let pool; // Database connection pool
+
 // Function to create a new database connection pool
 async function createPool() {
     try {
-        const pool = mysql.createPool({
+        pool = mysql.createPool({
             host: hardcodedDBDetails.host,
-            user:hardcodedDBDetails.user,
+            user: hardcodedDBDetails.user,
             password: hardcodedDBDetails.password,
             database: hardcodedDBDetails.database,
             waitForConnections: true,
@@ -30,7 +32,6 @@ async function createPool() {
         });
 
         console.log('Database connection pool created');
-        return pool;
     } catch (error) {
         console.log('Error creating database connection pool:', error);
         throw error;
@@ -40,7 +41,9 @@ async function createPool() {
 // Function to create SMS data table
 async function createSmsDataTable() {
     try {
-        const pool = await createPool();
+        if (!pool) {
+            await createPool(); // Create pool if not already initialized
+        }
         const connection = await pool.getConnection();
         await connection.query(`
             CREATE TABLE IF NOT EXISTS IGRS_Message (
@@ -71,7 +74,7 @@ app.post('/validate_database', async (req, res) => {
     // Compare incoming details with hardcoded ones
     if (
         host !== hardcodedDBDetails.host ||
-         user !== hardcodedDBDetails.user ||
+        user !== hardcodedDBDetails.user ||
         password !== hardcodedDBDetails.password ||
         database !== hardcodedDBDetails.database
     ) {
@@ -81,7 +84,6 @@ app.post('/validate_database', async (req, res) => {
     res.status(200).send('Database details validated successfully');
 });
 
-
 // Endpoint to handle receiving SMS data from Flutter app
 app.post('/sms', async (req, res) => {
     const { sender, message, message_time, user_mobile } = req.body;
@@ -90,21 +92,17 @@ app.post('/sms', async (req, res) => {
     }
 
     try {
+        if (!pool) {
+            await createPool(); // Create pool if not already initialized
+        }
+
         // Extract OTP from message
         const otpRegex = /\b\d{4,6}|\b\d{16}\b/;
         const otpMatch = message.match(otpRegex);
         const otp = otpMatch ? otpMatch[0] : null;
- const Messege_time = moment(message_time).format('YYYY/MM/DD HH:mm:ss');
-        console.log(sender);
-         console.log(Messege_time);
-         console.log(otp);
-         console.log(user_mobile);
-         console.log(message);
-        
-        // Get connection pool
-        const pool = await createPool();
+        const Messege_time = moment(message_time).format('YYYY/MM/DD HH:mm:ss');
 
-        // Store data in the database
+        // Get connection from the pool
         const connection = await pool.getConnection();
         await connection.query('INSERT INTO IGRS_Message (sender, Messege_time, message, otp, user_mobile) VALUES (?, ?, ?, ?, ?)', [sender, Messege_time, message, otp, user_mobile]);
         connection.release();
@@ -118,9 +116,6 @@ app.post('/sms', async (req, res) => {
 });
 
 // Start the server
-app.listen(port,  () => {
+app.listen(port, () => {
     console.log(`Server is running on http://192.168.160.29:${port}`);
 });
-
-
-
