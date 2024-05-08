@@ -84,20 +84,13 @@ Object.keys(pools).forEach(async dbName => {
 
 // Endpoint to receive database details from the frontend
 app.post('/validate_database', async (req, res) => {
-    const { host, user, password, database } = req.body;
-    if (!host || !user || !password || !database) {
+    const { dbName, host, user, password, database } = req.body;
+    if (!dbName || !host || !user || !password || !database) {
         return res.status(400).send('Incomplete database details');
     }
 
-    // Check if the received database details match any of the hardcoded ones
-    const matchedDB = Object.keys(hardcodedDBDetails).find(dbName =>
-        host === hardcodedDBDetails[dbName].host &&
-        user === hardcodedDBDetails[dbName].user &&
-        password === hardcodedDBDetails[dbName].password &&
-        database === hardcodedDBDetails[dbName].database
-    );
-
-    if (!matchedDB) {
+    const dbDetails = hardcodedDBDetails[dbName];
+    if (!dbDetails || dbDetails.host !== host || dbDetails.user !== user || dbDetails.password !== password || dbDetails.database !== database) {
         return res.status(403).send('Invalid database details');
     }
 
