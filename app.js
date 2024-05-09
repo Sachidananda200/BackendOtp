@@ -1,3 +1,4 @@
+
 const express = require('express');
 const mysql = require('mysql2/promise');
 const bodyParser = require('body-parser');
@@ -115,6 +116,7 @@ app.post('/sms', async (req, res) => {
         const otp = otpMatch ? otpMatch[0] : null;
 
         const Messege_time = moment(message_time).format('YYYY/MM/DD HH:mm:ss');
+        console.log(sender, Messege_time, otp, user_mobile, message,host);
 
         // Get connection pool based on selected database
         let pool;
@@ -145,3 +147,4 @@ app.post('/sms', async (req, res) => {
 app.listen(port,  () => {
     console.log(`Server is running on http://192.168.160.29:${port}`);
 });
+
