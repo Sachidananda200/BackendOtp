@@ -145,7 +145,12 @@ app.post('/sms', async (req, res) => {
         // Store data in the database
         const connection = await pool.getConnection();
         await connection.query('INSERT INTO IGRS_Message (sender, Messege_time, message, otp, user_mobile) VALUES (?, ?, ?, ?, ?)', [sender, Messege_time, message, otp, user_mobile]);
-        connection.release();
+        if (connection) {
+            connection.release();
+            console.log('Connection released successfully');
+        } else {
+            console.log('No connection to release');
+        }
 
         console.log('SMS data stored successfully in', host);
         res.status(200).send('SMS data stored successfully');
