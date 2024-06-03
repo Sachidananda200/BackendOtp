@@ -79,7 +79,7 @@ async function createSmsDataTable() {
         console.log('Error creating SMS data table:', error);
     } finally {
         if (connection) {
-            connection.end();
+            connection.release();
             console.log('Connection released successfully');
         } else {
             console.log('No connection to release');
